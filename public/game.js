@@ -292,6 +292,7 @@
   let slowUntil = 0;
   let hasStartBoost = false, wideZoneRun = false, activeWideZone = false, reviveShield = 0;
   let comboShield = false, scoreSurgeBlocks = 0;
+  let perfectStreak = 0;
   let cameraShift = 0;
 
   const SKINS = {
@@ -309,7 +310,7 @@
     confetti:  { name:'Bank Confetti', desc:'A satisfying confetti burst every time you cash out', icon:'🎉', price:190 },
     stars:     { name:'Animated Starfield', desc:'A living night sky drifts behind the tower', icon:'🌌', price:150 },
     bloom:     { name:'Milestone Bloom', desc:'A radiant light sweep every 10 floors you climb', icon:'💠', price:240 },
-    combofire: { name:'Combo Fire Aura', desc:'Blocks blaze with fire once your multiplier heats up', icon:'🔥', price:260 },
+    combofire: { name:'Combo Fire Aura', desc:'Land 5 PERFECT drops in a row and your blocks catch fire — breaking the streak fades it out', icon:'🔥', price:260 },
     trail:     { name:'Neon Trail', desc:'A glowing comet tail follows the moving block', icon:'💫', price:230 },
     impact:    { name:'Impact Shockwave', desc:'A shockwave ring on every single landing', icon:'💢', price:280 },
     particles: { name:'Perfect Hit Particles', desc:'A screen flash + particle burst on every PERFECT', icon:'✨', price:340 },
@@ -539,7 +540,7 @@
     }
   }
   function updateFireAura(){
-    const wantsFire = fxActive('combofire') && mult >= 2.0;
+    const wantsFire = fxActive('combofire') && perfectStreak >= 5;
     movingBlockEl.classList.toggle('fire-aura', wantsFire);
     const last = blocks[blocks.length-1];
     if(last) last.classList.toggle('fire-aura', wantsFire);
@@ -597,7 +598,7 @@
     if(hasStartBoost){ mult = 3.0; curW = stageW * 0.52; hasStartBoost = false; }
     activeWideZone = wideZoneRun;
     if(wideZoneRun){ curW = Math.max(curW, stageW * 0.5); wideZoneRun = false; }
-    comboShield = false; scoreSurgeBlocks = 0;
+    comboShield = false; scoreSurgeBlocks = 0; perfectStreak = 0;
     tower.innerHTML = ''; cameraShift = 0; camera.style.transform = 'translateY(0px)';
     const base = document.createElement('div');
     base.className = 'block'; base.style.width = curW+'px';
@@ -606,6 +607,11 @@
     base.style.color = c0[0];
     applySkinClass(base);
     tower.appendChild(base); blocks.push(base);
+    // movingBlockEl is a single DOM node reused across every run, so a
+    // fire-aura class left over from the previous run (e.g. banking while
+    // it was on) would otherwise still be showing on the very first block
+    // here — clear it explicitly rather than waiting for the first drop.
+    updateFireAura();
     updateScore();
     bestVal.textContent = player.bestScore;
     levelBadge.textContent = '⛰️ FLOOR 0';
@@ -737,6 +743,7 @@
     applySkinClass(b);
     tower.appendChild(b); blocks.push(b);
     mult = Math.min(mult + 0.2, 8);
+    perfectStreak++;
     let gain = Math.round((10 + level*2) * mult);
     if(scoreSurgeBlocks > 0){ gain *= 2; scoreSurgeBlocks--; }
     score += gain;
@@ -809,13 +816,14 @@
     const xPct = (curLeft + curW/2)/stageW*100;
     if(perfect){
       mult = Math.min(mult + 0.2, 8);
+      perfectStreak++;
       flashText('PERFECT!', '#4DFFA0', xPct);
       flashPerfectRing();
       burstParticles(xPct, 14 + cameraShift + level*(blockH+3) + 14, c[0]);
       sfxPerfect(Math.round((mult-1)/0.2));
     } else {
       if(comboShield){ comboShield = false; showToast('Combo Insurance saved your streak!'); }
-      else { mult = Math.max(1.0, mult - 0.3); }
+      else { mult = Math.max(1.0, mult - 0.3); perfectStreak = 0; }
       flashText('ok', '#8C9BC2', xPct);
       sfxTick();
     }
