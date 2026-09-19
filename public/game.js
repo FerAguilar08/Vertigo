@@ -1134,6 +1134,11 @@
       renderHome();
       renderLeaderboardPreview();
       showScreen('screenHome');
+      // Syncs an existing local best to the shared leaderboard — needed for
+      // players whose record was already on their device before the shared
+      // leaderboard had a database connected, since otherwise nothing ever
+      // pushes it there until they beat their own record again.
+      if(player.bestScore > 0) pushToLeaderboard();
     } else {
       player = defaultPlayer();
       buildAvatarPicker(player.avatar);
