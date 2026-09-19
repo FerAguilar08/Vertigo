@@ -161,7 +161,9 @@
   .lb-rank.top1{ color:#FFD24D; } .lb-rank.top2{ color:#D6D6E0; } .lb-rank.top3{ color:#E0A55A; }
   .lb-avatar{ width:26px; height:26px; border-radius:50%; background: var(--panel-hi); display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
   .lb-name{ flex:1; font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-stats{ display:flex; flex-direction:column; align-items:flex-end; gap:1px; flex-shrink:0; }
   .lb-score{ font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:13px; color: var(--amber); }
+  .lb-floor{ font-size:9.5px; font-weight:700; color: var(--text-dim); letter-spacing:0.3px; white-space:nowrap; }
 
   .feature-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
   .feature-chip{
