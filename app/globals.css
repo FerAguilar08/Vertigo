@@ -73,10 +73,15 @@
     font-weight:700; font-size:15px; text-align:center; outline:none;
   }
   .name-input:focus{ border-color: var(--amber); }
-  .avatar-picker{ display:flex; gap:10px; margin:4px 0; }
+  .avatar-picker{
+    display:flex; gap:10px; margin:4px 0; max-width:100%;
+    overflow-x:auto; -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
+    padding:4px 2px;
+  }
   .avatar-opt{
     width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     font-size:22px; background: var(--panel); border:2px solid var(--line); cursor:pointer;
+    flex-shrink:0; scroll-snap-align:center;
   }
   .avatar-opt.sel{ border-color: var(--amber); box-shadow: 0 0 12px rgba(255,184,77,0.4); }
 
