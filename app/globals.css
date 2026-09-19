@@ -706,22 +706,34 @@
   }
 
   /* ---------- Combo Fire Aura ---------- */
-  .fire-aura{ animation: fireAura 0.6s ease-in-out infinite !important; position:relative; }
+  /* No position here: .moving-block (absolute) and .block (relative) are
+     already positioned, and this rule loading after .moving-block's would
+     otherwise win on equal specificity and silently override it to
+     relative — which knocked the moving block out of the stage entirely. */
+  .fire-aura{ animation: fireAura 0.6s ease-in-out infinite !important; }
   @keyframes fireAura{
     0%{ box-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 10px 3px rgba(255,150,40,0.55), inset 0 -3px 6px rgba(0,0,0,0.15); }
     50%{ box-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 26px 10px rgba(255,60,10,0.85), inset 0 -3px 6px rgba(0,0,0,0.15); }
     100%{ box-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 10px 3px rgba(255,150,40,0.55), inset 0 -3px 6px rgba(0,0,0,0.15); }
   }
   .fire-aura::before{
-    content:''; position:absolute; inset:-2px; border-radius:8px; pointer-events:none;
-    background: repeating-radial-gradient(circle at 20% 120%, rgba(255,214,110,0.9) 0 2px, transparent 3px 14px),
-                repeating-radial-gradient(circle at 65% 130%, rgba(255,120,40,0.8) 0 2px, transparent 3px 16px),
-                repeating-radial-gradient(circle at 90% 125%, rgba(255,214,110,0.85) 0 2px, transparent 3px 12px);
-    background-size: 100% 200%;
-    mix-blend-mode: screen; opacity:0.9;
-    animation: emberRise 0.9s linear infinite;
+    /* Sparse drifting embers, not a full-face texture — the block's own
+       color and edges must stay readable so players can still judge it. */
+    content:''; position:absolute; inset:0; border-radius:6px; pointer-events:none;
+    background-image:
+      radial-gradient(circle, rgba(255,226,160,0.95) 0 1px, transparent 2.2px),
+      radial-gradient(circle, rgba(255,150,60,0.85) 0 1px, transparent 2.2px),
+      radial-gradient(circle, rgba(255,226,160,0.75) 0 1px, transparent 2.2px);
+    background-repeat: repeat;
+    background-size: 18px 26px, 24px 34px, 15px 22px;
+    background-position: 3px 20px, 14px 10px, 9px 30px;
+    mix-blend-mode: screen; opacity:0.5;
+    animation: emberRise 1.3s linear infinite;
   }
-  @keyframes emberRise{ 0%{ background-position: 0 0, 0 0, 0 0; } 100%{ background-position: 0 -200%, 0 -220%, 0 -190%; } }
+  @keyframes emberRise{
+    0%{ background-position: 3px 20px, 14px 10px, 9px 30px; }
+    100%{ background-position: 3px -6px, 14px -24px, 9px 8px; }
+  }
   .fire-ember{
     position:absolute; width:3px; height:3px; border-radius:50%;
     background: radial-gradient(circle, #FFE9A8, #FF8A3D 70%);
