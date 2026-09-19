@@ -433,49 +433,110 @@
   function spawnConfetti(){
     if(!fxActive('confetti')) return;
     const colors = ['#FFB84D','#4DD8FF','#FF4D9E','#4DFFA0','#FFE9A8','#C24DFF'];
+    const shapes = ['rect','dot','ribbon'];
     const cx = 50, cy = 42;
-    for(let i=0;i<28;i++){
-      const c = document.createElement('div');
-      c.className = 'confetti-piece';
-      c.style.left = cx+'%';
-      c.style.top = cy+'%';
-      c.style.background = colors[Math.floor(Math.random()*colors.length)];
-      const ang = Math.random()*Math.PI*2;
-      const dist = 50 + Math.random()*110;
-      const dx = Math.cos(ang)*dist;
-      const dy = Math.sin(ang)*dist + 36;
-      c.style.setProperty('--cpt', `translate(${dx}px, ${dy}px)`);
-      c.style.setProperty('--crot', (Math.random()*720-360)+'deg');
-      c.style.animationDelay = (Math.random()*0.08)+'s';
-      stage.appendChild(c);
-      setTimeout(() => c.remove(), 1500);
-    }
+    const fire = (count, delay, powerMul) => {
+      for(let i=0;i<count;i++){
+        const c = document.createElement('div');
+        const shape = shapes[Math.floor(Math.random()*shapes.length)];
+        c.className = 'confetti-piece confetti-' + shape;
+        c.style.left = cx+'%';
+        c.style.top = cy+'%';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        const ang = Math.random()*Math.PI*2;
+        const dist = (55 + Math.random()*130) * powerMul;
+        const dx = Math.cos(ang)*dist;
+        const dyOut = Math.sin(ang)*dist*0.55 - 18;
+        const dyFall = Math.abs(Math.sin(ang))*40 + 90;
+        c.style.setProperty('--cpt', `translate(${dx}px, ${dyOut}px)`);
+        c.style.setProperty('--cpt2', `translate(${dx*1.35}px, ${dyOut+dyFall}px)`);
+        c.style.setProperty('--crot', (Math.random()*900-450)+'deg');
+        c.style.animationDelay = delay + (Math.random()*0.09)+'s';
+        stage.appendChild(c);
+        setTimeout(() => c.remove(), 1650+delay*1000);
+      }
+    };
+    fire(26, 0, 1);
+    fire(18, 0.1, 0.72);
   }
   function spawnFireworks(){
     if(!fxActive('fireworks')) return;
-    const colors = ['#FFD24D','#FF4D9E','#4DD8FF','#4DFFA0','#C24DFF'];
-    for(let burst=0; burst<3; burst++){
+    const palette = [['#FFD24D','#FFF3C4'], ['#FF4D9E','#FFD1E8'], ['#4DD8FF','#D6F5FF'], ['#4DFFA0','#DFFFEC'], ['#C24DFF','#EBD1FF']];
+    const bursts = [
+      { size: 16, dist: 38 }, { size: 18, dist: 44 }, { size: 16, dist: 40 },
+      { size: 20, dist: 48 }, { size: 30, dist: 62 }
+    ];
+    bursts.forEach((cfg, i) => {
       setTimeout(() => {
-        const cx = 20+Math.random()*60, cy = 20+Math.random()*45;
-        for(let i=0;i<14;i++){
-          const p = document.createElement('div');
-          p.className = 'firework-burst';
-          p.style.left = cx+'%'; p.style.top = cy+'%';
-          p.style.background = colors[Math.floor(Math.random()*colors.length)];
-          const ang = Math.random()*Math.PI*2, dist = 30+Math.random()*40;
-          p.style.setProperty('--fw', `translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px)`);
-          stage.appendChild(p);
-          setTimeout(() => p.remove(), 950);
-        }
-      }, burst*180);
-    }
+        const cx = 18+Math.random()*64, cy = 18+Math.random()*42;
+        const isFinale = i === bursts.length-1;
+        const [core, spark] = palette[i % palette.length];
+
+        // A rocket streaks up from the base of the stage before the burst pops —
+        // the anticipation beat real fireworks have before the flash.
+        const rocket = document.createElement('div');
+        rocket.className = 'firework-rocket';
+        rocket.style.left = cx+'%';
+        rocket.style.setProperty('--rty', cy+'%');
+        rocket.style.background = core;
+        stage.appendChild(rocket);
+        setTimeout(() => rocket.remove(), 420);
+
+        setTimeout(() => {
+          if(isFinale){
+            const ring = document.createElement('div');
+            ring.className = 'firework-ring';
+            ring.style.left = cx+'%'; ring.style.top = cy+'%';
+            ring.style.borderColor = core;
+            stage.appendChild(ring);
+            setTimeout(() => ring.remove(), 620);
+            sfxRecord();
+          }
+          for(let p=0;p<cfg.size;p++){
+            const el = document.createElement('div');
+            el.className = 'firework-burst' + (p % 4 === 0 ? ' firework-spark' : '');
+            el.style.left = cx+'%'; el.style.top = cy+'%';
+            el.style.background = p % 3 === 0 ? spark : core;
+            const ang = (Math.PI*2/cfg.size)*p + (Math.random()*0.35-0.175);
+            const dist = cfg.dist + Math.random()*18;
+            el.style.setProperty('--fw', `translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px)`);
+            el.style.setProperty('--fw2', `translate(${Math.cos(ang)*dist*1.15}px, ${Math.sin(ang)*dist*1.15+26}px)`);
+            stage.appendChild(el);
+            setTimeout(() => el.remove(), 1150);
+          }
+        }, 380);
+      }, i*420);
+    });
   }
-  function spawnMilestoneBloom(){
+  function spawnMilestoneBloom(atLevel){
     if(!fxActive('bloom')) return;
-    const b = document.createElement('div');
-    b.className = 'milestone-bloom';
-    stage.appendChild(b);
-    setTimeout(() => b.remove(), 950);
+    const sweep = document.createElement('div');
+    sweep.className = 'milestone-bloom';
+    stage.appendChild(sweep);
+    setTimeout(() => sweep.remove(), 950);
+
+    const ring = document.createElement('div');
+    ring.className = 'milestone-ring';
+    stage.appendChild(ring);
+    setTimeout(() => ring.remove(), 900);
+
+    const label = document.createElement('div');
+    label.className = 'milestone-label';
+    label.textContent = '⛰️ FLOOR ' + atLevel;
+    stage.appendChild(label);
+    setTimeout(() => label.remove(), 1100);
+
+    const sparkCount = 10;
+    for(let i=0;i<sparkCount;i++){
+      const s = document.createElement('div');
+      s.className = 'milestone-spark';
+      const ang = (Math.PI*2/sparkCount)*i;
+      const dist = 70 + Math.random()*40;
+      s.style.setProperty('--mst', `translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px)`);
+      s.style.animationDelay = (Math.random()*0.12)+'s';
+      stage.appendChild(s);
+      setTimeout(() => s.remove(), 1050);
+    }
   }
   function updateFireAura(){
     const wantsFire = fxActive('combofire') && mult >= 2.0;
@@ -490,14 +551,42 @@
   function applyFxVisuals(){
     starsBg.classList.toggle('on', fxActive('stars'));
     if(fxActive('stars') && starsBg.children.length === 0){
-      for(let i=0;i<30;i++){
-        const s = document.createElement('div');
-        s.className = 'star';
-        s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
-        s.style.animationDelay = (Math.random()*2.4)+'s';
-        starsBg.appendChild(s);
-      }
+      // Three depth layers — dim/small far stars, mid stars, a few bright near
+      // stars with their own glow — read as parallax depth rather than a flat sprinkle.
+      const layers = [
+        { count: 36, cls: 'star star-far' },
+        { count: 20, cls: 'star star-mid' },
+        { count: 8,  cls: 'star star-near' }
+      ];
+      layers.forEach(layer => {
+        for(let i=0;i<layer.count;i++){
+          const s = document.createElement('div');
+          s.className = layer.cls;
+          s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
+          s.style.animationDelay = (Math.random()*3.2)+'s';
+          s.style.setProperty('--twinkleDur', (2 + Math.random()*2.4)+'s');
+          starsBg.appendChild(s);
+        }
+      });
     }
+  }
+
+  let shootingStarTimer = null;
+  function spawnShootingStar(){
+    if(!fxActive('stars')) return;
+    const s = document.createElement('div');
+    s.className = 'shooting-star';
+    s.style.top = (5 + Math.random()*35) + '%';
+    s.style.left = (55 + Math.random()*35) + '%';
+    starsBg.appendChild(s);
+    setTimeout(() => s.remove(), 1100);
+  }
+  function scheduleShootingStar(){
+    clearTimeout(shootingStarTimer);
+    shootingStarTimer = setTimeout(() => {
+      spawnShootingStar();
+      scheduleShootingStar();
+    }, 7000 + Math.random()*8000);
   }
 
   function resetRun(){
@@ -542,7 +631,7 @@
     updateRiskMeter();
   }
 
-  let lastGhostAt = 0;
+  let lastGhostAt = 0, lastEmberAt = 0;
   function loop(t){
     if(!running) return;
     const w = parseFloat(movingBlockEl.style.width);
@@ -552,17 +641,28 @@
     if(movingLeft <= 0){ movingLeft = 0; movingDir = 1; }
     if(movingLeft + w >= stageW){ movingLeft = stageW - w; movingDir = -1; }
     movingBlockEl.style.left = movingLeft + 'px';
-    if(fxActive('trail') && t && t - lastGhostAt > 55){
+    if(fxActive('trail') && t && t - lastGhostAt > 50){
       lastGhostAt = t;
       const ghost = document.createElement('div');
       ghost.className = 'ghost-trail';
       ghost.style.width = w+'px'; ghost.style.height = blockH+'px';
       ghost.style.left = movingLeft+'px'; ghost.style.bottom = movingBlockEl.style.bottom;
       ghost.style.background = movingBlockEl.style.background;
-      ghost.style.opacity = '0.35'; ghost.style.transition = 'opacity .35s ease';
       camera.appendChild(ghost);
-      requestAnimationFrame(() => { ghost.style.opacity = '0'; });
-      setTimeout(() => ghost.remove(), 380);
+      requestAnimationFrame(() => { ghost.classList.add('fade'); });
+      setTimeout(() => ghost.remove(), 420);
+    }
+    if(fxActive('combofire') && movingBlockEl.classList.contains('fire-aura') && t && t - lastEmberAt > 90){
+      lastEmberAt = t;
+      for(let i=0;i<2;i++){
+        const ember = document.createElement('div');
+        ember.className = 'fire-ember';
+        ember.style.left = (movingLeft + 4 + Math.random()*(w-8)) + 'px';
+        ember.style.bottom = movingBlockEl.style.bottom;
+        ember.style.setProperty('--edx', (Math.random()*24-12)+'px');
+        camera.appendChild(ember);
+        setTimeout(() => ember.remove(), 620);
+      }
     }
     rafId = requestAnimationFrame(loop);
   }
@@ -591,22 +691,39 @@
 
   function burstParticles(xPct, yPx, color){
     if(!fxActive('particles')) return;
+
+    const flash = document.createElement('div');
+    flash.className = 'screen-flash';
+    flash.style.background = `radial-gradient(circle at ${xPct}% ${100 - Math.min(85, yPx/4)}%, ${color}55, transparent 62%)`;
+    stage.appendChild(flash);
+    setTimeout(() => flash.remove(), 380);
+
+    const rays = document.createElement('div');
+    rays.className = 'perfect-rays';
+    rays.style.left = xPct + '%'; rays.style.bottom = yPx + 'px';
+    rays.style.background = `repeating-conic-gradient(${color}00 0deg, ${color}99 3deg, ${color}00 10deg)`;
+    stage.appendChild(rays);
+    setTimeout(() => rays.remove(), 480);
+
     const ring = document.createElement('div');
     ring.className = 'impact-ring'; ring.style.borderColor = color;
     ring.style.left = xPct + '%'; ring.style.bottom = yPx + 'px';
     stage.appendChild(ring);
     setTimeout(() => ring.remove(), 520);
-    for(let i=0;i<18;i++){
+
+    for(let i=0;i<24;i++){
+      const isSpark = i % 4 === 0;
       const p = document.createElement('div');
-      p.className = 'particle';
-      const size = 3 + Math.random()*5;
-      p.style.width = size+'px'; p.style.height = size+'px';
+      p.className = isSpark ? 'particle particle-spark' : 'particle';
+      const size = isSpark ? 2 + Math.random()*2 : 3 + Math.random()*5;
+      p.style.width = size+'px'; p.style.height = (isSpark ? size*5 : size)+'px';
       p.style.left = xPct+'%'; p.style.bottom = yPx+'px';
-      p.style.background = Math.random() < 0.5 ? color : '#fff';
-      const ang = Math.random()*Math.PI*2, dist = 22+Math.random()*34;
+      p.style.background = Math.random() < 0.55 ? color : '#fff';
+      const ang = Math.random()*Math.PI*2, dist = 24+Math.random()*42;
       p.style.setProperty('--pt', `translate(${Math.cos(ang)*dist}px, ${-Math.sin(ang)*dist}px)`);
+      p.style.setProperty('--prot', (ang*180/Math.PI+90)+'deg');
       stage.appendChild(p);
-      setTimeout(() => p.remove(), 560);
+      setTimeout(() => p.remove(), 620);
     }
   }
 
@@ -661,12 +778,32 @@
     tower.appendChild(b); blocks.push(b);
 
     if(fxActive('impact')){
+      const shockX = curLeft + curW/2;
+      const shockY = 14 + cameraShift + (level-1)*(blockH+3) + blockH/2;
+
       const ring = document.createElement('div');
-      ring.className = 'impact-ring'; ring.style.borderColor = c[0];
-      ring.style.left = (curLeft + curW/2) + 'px';
-      ring.style.bottom = (14 + cameraShift + (level-1)*(blockH+3) + blockH/2) + 'px';
+      ring.className = 'impact-ring impact-ring-primary'; ring.style.borderColor = c[0];
+      ring.style.left = shockX + 'px'; ring.style.bottom = shockY + 'px';
       camera.appendChild(ring);
       setTimeout(() => ring.remove(), 520);
+
+      const ring2 = document.createElement('div');
+      ring2.className = 'impact-ring impact-ring-secondary'; ring2.style.borderColor = c[0];
+      ring2.style.left = shockX + 'px'; ring2.style.bottom = shockY + 'px';
+      camera.appendChild(ring2);
+      setTimeout(() => ring2.remove(), 640);
+
+      for(let i=0;i<7;i++){
+        const deb = document.createElement('div');
+        deb.className = 'impact-debris';
+        deb.style.left = shockX + 'px'; deb.style.bottom = shockY + 'px';
+        deb.style.background = i % 2 === 0 ? c[0] : '#DDE3F5';
+        const ang = Math.PI + Math.random()*Math.PI;
+        const dist = 14 + Math.random()*22;
+        deb.style.setProperty('--dbt', `translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist*0.5}px)`);
+        camera.appendChild(deb);
+        setTimeout(() => deb.remove(), 460);
+      }
     }
 
     const xPct = (curLeft + curW/2)/stageW*100;
@@ -676,12 +813,6 @@
       flashPerfectRing();
       burstParticles(xPct, 14 + cameraShift + level*(blockH+3) + 14, c[0]);
       sfxPerfect(Math.round((mult-1)/0.2));
-      if(fxActive('particles')){
-        const flash = document.createElement('div');
-        flash.className = 'screen-flash';
-        stage.appendChild(flash);
-        setTimeout(() => flash.remove(), 380);
-      }
     } else {
       if(comboShield){ comboShield = false; showToast('Combo Insurance saved your streak!'); }
       else { mult = Math.max(1.0, mult - 0.3); }
@@ -703,7 +834,7 @@
     }
     if(curW < 6){ crash(); return; }
     spawnMoving();
-    if(level > 0 && level % 10 === 0){ spawnMilestoneBloom(); offerBankPrompt(); }
+    if(level > 0 && level % 10 === 0){ spawnMilestoneBloom(level); offerBankPrompt(); }
   }
 
   function offerBankPrompt(){
@@ -914,7 +1045,8 @@
     }
     function renderFx(){
       const tabF = wrap.querySelector('#tabFx');
-      tabF.innerHTML = Object.entries(FX).map(([key, fx]) => {
+      tabF.innerHTML = fxOrder().map((key) => {
+        const fx = FX[key];
         const owned = player.ownedFx.includes(key);
         const active = fxActive(key);
         const canAfford = player.gems >= fx.price;
@@ -983,6 +1115,7 @@
   // BOOT
   // =====================================================================
   async function boot(){
+    scheduleShootingStar();
     const loaded = await loadPlayer();
     if(loaded){
       player = loaded;
