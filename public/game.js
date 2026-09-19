@@ -122,7 +122,10 @@
       <div class="lb-rank ${rc}">${rank}</div>
       <div class="lb-avatar">${e.avatar||'🧗'}</div>
       <div class="lb-name">${escapeHtml(e.name||'Climber')}</div>
-      <div class="lb-score">${e.score}</div>
+      <div class="lb-stats">
+        <div class="lb-score">${e.score}</div>
+        <div class="lb-floor">⛰️ FLOOR ${e.floor||0}</div>
+      </div>
     </div>`;
   }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -141,7 +144,7 @@
     const myIndex = entries.findIndex(e => e.id === player.id);
     if(myIndex >= 0 && player.bestScore > 0){
       myBar.style.display = 'flex';
-      myBar.innerHTML = `<div class="lb-rank" style="color:var(--amber);">#${myIndex+1}</div><div class="lb-avatar">${player.avatar}</div><div class="lb-name">You</div><div class="lb-score">${player.bestScore}</div>`;
+      myBar.innerHTML = `<div class="lb-rank" style="color:var(--amber);">#${myIndex+1}</div><div class="lb-avatar">${player.avatar}</div><div class="lb-name">You</div><div class="lb-stats"><div class="lb-score">${player.bestScore}</div><div class="lb-floor">⛰️ FLOOR ${player.bestFloor}</div></div>`;
     } else {
       myBar.style.display = 'none';
     }
