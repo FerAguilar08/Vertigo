@@ -5,12 +5,14 @@
   // =====================================================================
   const AVATARS = ['🧗','🧑‍🚀','🦊','🐧','🐲','🥷','👽','🐙'];
 
-  async function storGet(key, shared){
-    try{ const r = await window.storage.get(key, !!shared); return r ? r.value : null; }
+  // Private profile lives in this browser's localStorage, so a returning
+  // player on the same device keeps their name, avatar, gems and records.
+  function storGet(key){
+    try{ return localStorage.getItem('vertigo:' + key); }
     catch(e){ return null; }
   }
-  async function storSet(key, value, shared){
-    try{ await window.storage.set(key, value, !!shared); return true; }
+  function storSet(key, value){
+    try{ localStorage.setItem('vertigo:' + key, value); return true; }
     catch(e){ return false; }
   }
 
@@ -26,8 +28,8 @@
     };
   }
 
-  async function loadPlayer(){
-    const raw = await storGet('profile', false);
+  function loadPlayer(){
+    const raw = storGet('profile');
     if(raw){
       try{
         const p = JSON.parse(raw);
@@ -40,31 +42,34 @@
   let saveTimer = null;
   function savePlayer(){
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(async () => {
-      await storSet('profile', JSON.stringify(player), false);
+    saveTimer = setTimeout(() => {
+      storSet('profile', JSON.stringify(player));
     }, 250);
   }
 
+  // Shared leaderboard lives server-side (see app/api/leaderboard/route.js)
+  // so every player's best run is visible to everyone, not just this device.
   async function pushToLeaderboard(){
     if(!player.name) return;
-    await storSet('lb:' + player.id, JSON.stringify({
-      name: player.name, avatar: player.avatar, score: player.bestScore, floor: player.bestFloor, ts: Date.now()
-    }), true);
+    try{
+      await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: player.id, name: player.name, avatar: player.avatar,
+          score: player.bestScore, floor: player.bestFloor
+        })
+      });
+    }catch(e){}
   }
 
   async function fetchLeaderboard(){
-    const list = await (async () => {
-      try{ const r = await window.storage.list('lb:', true); return r ? r.keys : []; }
-      catch(e){ return []; }
-    })();
-    if(!list || !list.length) return [];
-    const entries = [];
-    await Promise.all(list.map(async (k) => {
-      const raw = await storGet(k, true);
-      if(raw){ try{ entries.push(JSON.parse(raw)); }catch(e){} }
-    }));
-    entries.sort((a,b) => b.score - a.score);
-    return entries;
+    try{
+      const res = await fetch('/api/leaderboard');
+      if(!res.ok) return [];
+      const data = await res.json();
+      return data.entries || [];
+    }catch(e){ return []; }
   }
 
   // =====================================================================
@@ -108,7 +113,7 @@
       return;
     }
     const top = entries.slice(0,3);
-    box.innerHTML = top.map((e,i) => rowHtml(e, i+1, e.name === player.name && e.score === player.bestScore)).join('');
+    box.innerHTML = top.map((e,i) => rowHtml(e, i+1, e.id === player.id)).join('');
   }
 
   function rowHtml(e, rank, isMe){
@@ -132,8 +137,8 @@
       myBar.style.display = 'none';
       return;
     }
-    listEl.innerHTML = entries.slice(0,50).map((e,i) => rowHtml(e, i+1, e.name === player.name)).join('');
-    const myIndex = entries.findIndex(e => e.name === player.name && e.score === player.bestScore);
+    listEl.innerHTML = entries.slice(0,50).map((e,i) => rowHtml(e, i+1, e.id === player.id)).join('');
+    const myIndex = entries.findIndex(e => e.id === player.id);
     if(myIndex >= 0 && player.bestScore > 0){
       myBar.style.display = 'flex';
       myBar.innerHTML = `<div class="lb-rank" style="color:var(--amber);">#${myIndex+1}</div><div class="lb-avatar">${player.avatar}</div><div class="lb-name">You</div><div class="lb-score">${player.bestScore}</div>`;
