@@ -706,33 +706,37 @@
   }
 
   /* ---------- Combo Fire Aura ---------- */
-  /* No position here: .moving-block (absolute) and .block (relative) are
-     already positioned, and this rule loading after .moving-block's would
-     otherwise win on equal specificity and silently override it to
-     relative — which knocked the moving block out of the stage entirely. */
-  .fire-aura{ animation: fireAura 0.6s ease-in-out infinite !important; }
-  @keyframes fireAura{
-    0%{ box-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 10px 3px rgba(255,150,40,0.55), inset 0 -3px 6px rgba(0,0,0,0.15); }
-    50%{ box-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 26px 10px rgba(255,60,10,0.85), inset 0 -3px 6px rgba(0,0,0,0.15); }
-    100%{ box-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 10px 3px rgba(255,150,40,0.55), inset 0 -3px 6px rgba(0,0,0,0.15); }
-  }
-  .fire-aura::before{
-    /* Sparse drifting embers, not a full-face texture — the block's own
-       color and edges must stay readable so players can still judge it. */
-    content:''; position:absolute; inset:0; border-radius:6px; pointer-events:none;
+  /* Everything fire-related lives on ::before, never on .block/.moving-block
+     itself — that's what lets it fade smoothly (a plain opacity transition
+     on a rule that's always present) instead of the flicker animation
+     hard-cutting when the class is removed, and it keeps this effect from
+     ever touching position/box-shadow the block itself relies on. */
+  .block::before, .moving-block::before{
+    content:''; position:absolute; inset:-2px; border-radius:8px; pointer-events:none;
     background-image:
-      radial-gradient(circle, rgba(255,226,160,0.95) 0 1px, transparent 2.2px),
-      radial-gradient(circle, rgba(255,150,60,0.85) 0 1px, transparent 2.2px),
-      radial-gradient(circle, rgba(255,226,160,0.75) 0 1px, transparent 2.2px);
+      radial-gradient(circle, rgba(255,226,160,0.95) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle, rgba(255,150,60,0.85) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle, rgba(255,226,160,0.8) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle, rgba(255,170,80,0.75) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle, rgba(255,200,120,0.7) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle, rgba(255,140,50,0.7) 0 1.2px, transparent 2.4px);
     background-repeat: repeat;
-    background-size: 18px 26px, 24px 34px, 15px 22px;
-    background-position: 3px 20px, 14px 10px, 9px 30px;
-    mix-blend-mode: screen; opacity:0.5;
-    animation: emberRise 1.3s linear infinite;
+    background-size: 9px 13px, 12px 17px, 8px 12px, 14px 19px, 7px 11px, 11px 15px;
+    background-position: 2px 10px, 7px 4px, 4px 9px, 10px 14px, 1px 6px, 13px 2px;
+    box-shadow: 0 0 10px 3px rgba(255,150,40,0.55), 0 0 24px 9px rgba(255,60,10,0.35);
+    mix-blend-mode: screen; opacity:0; transition: opacity 0.75s ease;
+  }
+  .block.fire-aura::before, .moving-block.fire-aura::before{
+    opacity:1;
+    animation: fireAuraGlow 0.6s ease-in-out infinite, emberRise 1.3s linear infinite;
+  }
+  @keyframes fireAuraGlow{
+    0%,100%{ box-shadow: 0 0 10px 3px rgba(255,150,40,0.55), 0 0 24px 9px rgba(255,60,10,0.35); }
+    50%{ box-shadow: 0 0 22px 8px rgba(255,90,20,0.85), 0 0 36px 14px rgba(255,50,10,0.5); }
   }
   @keyframes emberRise{
-    0%{ background-position: 3px 20px, 14px 10px, 9px 30px; }
-    100%{ background-position: 3px -6px, 14px -24px, 9px 8px; }
+    0%{ background-position: 2px 10px, 7px 4px, 4px 9px, 10px 14px, 1px 6px, 13px 2px; }
+    100%{ background-position: 2px -3px, 7px -13px, 4px -3px, 10px -5px, 1px -5px, 13px -13px; }
   }
   .fire-ember{
     position:absolute; width:3px; height:3px; border-radius:50%;
