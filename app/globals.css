@@ -295,34 +295,16 @@
   }
   @keyframes sunPulse{ 0%,100%{ opacity:0.75; } 50%{ opacity:1; } }
 
-  .stage.theme-glacial{ background: linear-gradient(180deg, #0A2036 0%, #0D3348 44%, #163B52 100%); }
-  .stage.theme-glacial::before{
-    content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
-    background:
-      radial-gradient(circle at 18% 22%, rgba(255,255,255,0.85) 1px, transparent 1.7px),
-      radial-gradient(circle at 62% 15%, rgba(255,255,255,0.65) 1px, transparent 1.6px),
-      radial-gradient(circle at 38% 38%, rgba(255,255,255,0.55) 1px, transparent 1.5px),
-      radial-gradient(circle at 82% 32%, rgba(255,255,255,0.75) 1px, transparent 1.7px),
-      radial-gradient(circle at 55% 55%, rgba(255,255,255,0.45) 1px, transparent 1.4px),
-      linear-gradient(120deg, transparent 30%, rgba(120,255,220,0.10) 45%, rgba(140,180,255,0.14) 55%, transparent 70%);
-    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 220% 220%;
-    animation: auroraDrift 8s ease-in-out infinite, iceTwinkle 2.6s ease-in-out infinite;
+  .stage.theme-glacial{
+    background-image: url('/skins/glacial-bg.webp');
+    background-size: cover;
+    background-position: center 22%;
   }
-  /* Distant snowy peaks — contained to a short band at the very bottom so it can never
-     reach up into the play area, using the same layered-hill technique as Sunset. */
   .stage.theme-glacial::after{
-    content:''; position:absolute; left:-10%; right:-10%; bottom:0; height:24%; z-index:0; pointer-events:none;
-    background:
-      radial-gradient(ellipse 22% 100% at 6% 100%, rgba(220,240,255,0.65) 58%, transparent 60%),
-      radial-gradient(ellipse 28% 82% at 24% 100%, rgba(160,200,228,0.75) 60%, transparent 62%),
-      radial-gradient(ellipse 24% 100% at 44% 100%, rgba(220,240,255,0.6) 58%, transparent 60%),
-      radial-gradient(ellipse 32% 74% at 64% 100%, rgba(140,182,212,0.85) 62%, transparent 64%),
-      radial-gradient(ellipse 26% 88% at 84% 100%, rgba(160,200,228,0.72) 60%, transparent 62%),
-      radial-gradient(ellipse 24% 100% at 100% 100%, rgba(220,240,255,0.6) 58%, transparent 60%),
-      linear-gradient(180deg, transparent 0%, #0A2036 60%, #0A2036 100%);
+    /* gentle darkening toward the bottom so the tower stays readable over the photo */
+    content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background: linear-gradient(180deg, rgba(6,14,24,0.05) 0%, rgba(6,14,24,0.25) 55%, rgba(4,10,17,0.72) 100%);
   }
-  @keyframes auroraDrift{ 0%,100%{ background-position: 0% 50%; } 50%{ background-position: 100% 50%; } }
-  @keyframes iceTwinkle{ 0%,100%{ opacity:0.65; } 50%{ opacity:1; } }
 
   .snow-layer{ display:none; position:absolute; inset:0; z-index:1; pointer-events:none; }
   .stage.theme-glacial .snow-layer{ display:block; }
