@@ -984,7 +984,7 @@
         <div id="tabCosmetics" style="display:none;"></div>
         <div id="tabFx" style="display:none;"></div>
         <button class="store-close" id="storeCloseBtn">Close</button>
-        <div class="demo-note" id="demoNote">Visual mockup of the purchase flow for this prototype — no real payments processed.</div>
+        <div class="demo-note" id="demoNote">🔒 Gem purchases are temporarily locked while real payments get set up — nothing here grants gems yet.</div>
         <div class="demo-note" id="cosmeticNote" style="display:none;">Skins and effects are bought with gems earned or purchased in-game — they cost more than gameplay boosts on purpose, so they're a long-term goal to save toward.</div>
       </div>
     `;
@@ -992,14 +992,13 @@
 
     const tabGems = wrap.querySelector('#tabGems');
     tabGems.innerHTML = `
-      <div class="pack"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">60 gems</div></div></div><button class="pack-buy" data-amt="60">$0.99</button></div>
-      <div class="pack"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">180 gems</div><div class="pack-bonus">+15% bonus</div></div></div><button class="pack-buy" data-amt="207">$2.99</button></div>
-      <div class="pack best"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">500 gems</div><div class="pack-bonus">⭐ Best value · +30%</div></div></div><button class="pack-buy" data-amt="650">$6.99</button></div>
-      <div class="pack"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">1200 gems</div><div class="pack-bonus">+40% bonus</div></div></div><button class="pack-buy" data-amt="1680">$14.99</button></div>
+      <div class="pack"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">60 gems</div></div></div><button class="pack-buy disabled" data-price="$0.99">🔒 Locked</button></div>
+      <div class="pack"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">180 gems</div><div class="pack-bonus">+15% bonus</div></div></div><button class="pack-buy disabled" data-price="$2.99">🔒 Locked</button></div>
+      <div class="pack best"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">500 gems</div><div class="pack-bonus">⭐ Best value · +30%</div></div></div><button class="pack-buy disabled" data-price="$6.99">🔒 Locked</button></div>
+      <div class="pack"><div class="pack-left"><div class="pack-gem"></div><div><div class="pack-amount">1200 gems</div><div class="pack-bonus">+40% bonus</div></div></div><button class="pack-buy disabled" data-price="$14.99">🔒 Locked</button></div>
     `;
     tabGems.querySelectorAll('.pack-buy').forEach(btn => {
-      btn.dataset.orig = btn.textContent;
-      btn.onclick = () => { addGems(parseInt(btn.dataset.amt,10)); btn.textContent='✓ Done'; setTimeout(()=>{ btn.textContent = btn.dataset.orig; },900); };
+      btn.onclick = () => showToast('💎 Gem purchases aren\'t available yet — check back soon!');
     });
 
     function skinOrder(){ return Object.keys(SKINS).filter(k => k !== 'default').sort((a,b) => SKINS[a].price - SKINS[b].price); }
